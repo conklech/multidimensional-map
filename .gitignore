@@ -1,0 +1,5 @@
+dist/
+.dist-buildwrapper/
+.settings
+.project
+_.dist-buildwrapper

@@ -1,0 +1,28 @@
+name:                multidimensional-map
+version:             0.1.0.0
+synopsis:            Multidimensional finite maps with heterogenous indices, using 'vinyl'.
+description:         
+homepage:            https://github.com/conklech/multidimensional-map
+license:             MIT
+author:              Christian Conkle
+maintainer:          christian@conkle.org
+
+category:            Data
+build-type:          Simple
+cabal-version:       >=1.6
+
+source-repository    head
+  type:              git
+  location:          git://github.com/conklech/nested-map.git
+
+library
+  hs-source-dirs:    src
+  exposed-modules:   Data.Map.Multidimensional
+                     Data.Map.Multidimensional.Nested
+                     Data.Map.Multidimensional.Class  
+  build-depends:     base == 4.6.*,
+                     containers >= 0.5 && < 0.6,
+                     vinyl >= 0.1.1 && < 0.2,
+                     semigroups,
+                     transformers
+                     
