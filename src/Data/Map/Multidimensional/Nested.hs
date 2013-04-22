@@ -56,18 +56,19 @@ import Data.Map.Multidimensional.Class
 
 
 
-newtype HMap (rs :: [*]) v = HMap { unHMap :: (HMap' rs v) } 
-    deriving (Semigroup, Monoid)
+newtype HMap (rs :: [*]) v = HMap { unHMap :: (HMapNest rs v) } 
+    deriving (Semigroup, Monoid, Functor)
 
 class RecordHMap (rs :: [*]) where
-    data HMap' rs v :: *
-    fromList' :: [(PlainRec rs, v)] -> HMap' rs v
-    toList' :: HMap' rs v -> [(PlainRec rs, v)]
-    mempty' :: HMap' rs v
-    mappend' :: Semigroup v => HMap' rs v -> HMap' rs v -> HMap' rs v
-
+    data HMapNest rs v :: *
+    fromList' :: [(PlainRec rs, v)] -> HMapNest rs v
+    toList' :: HMapNest rs v -> [(PlainRec rs, v)]
+    mempty' :: HMapNest rs v
+    mappend' :: Semigroup v => HMapNest rs v -> HMapNest rs v -> HMapNest rs v
+    fmap' :: (a -> b) -> HMapNest rs a -> HMapNest rs b
+    
 instance (Ord ty) => RecordHMap ((sy ::: ty) ': '[]) where
-    newtype HMap' '[(sy ::: ty)] v = HMapBase (Map ty v)
+    newtype HMapNest '[(sy ::: ty)] v = HMapBase (Map ty v)
     fromList' = HMapBase . Map.fromList . fmap go
       where
         go :: (PlainRec ((sy ::: ty) ': '[]), v) -> (ty, v)
@@ -78,36 +79,41 @@ instance (Ord ty) => RecordHMap ((sy ::: ty) ': '[]) where
         where go :: ty -> v -> [(PlainRec '[sy ::: ty], v)] 
               go t v = [(Field =: t, v)]
     {-# INLINE toList' #-}
+    fmap' f (HMapBase m) = HMapBase (fmap f m)
     mempty' = HMapBase $ Map.empty
     mappend' (HMapBase m1) (HMapBase m2) = HMapBase $  Map.unionWith (<>) m1 m2
-
+    
 instance (Ord ty, RecordHMap (ks1 ': ks2)) => RecordHMap ((sy ::: ty) ': ks1 ': ks2) where
-    newtype HMap' ((sy ::: ty) ': ks1 ': ks2) v = HMap'' (Map ty (HMap' (ks1 ': ks2) v)) 
-    fromList' items = HMap'' $ (fmap fromList') $ Map.fromListWith (++) $ reKey <$> items
+    newtype HMapNest ((sy ::: ty) ': ks1 ': ks2) v = 
+        HMapNest' (Map ty (HMapNest (ks1 ': ks2) v)) 
+    fromList' items = HMapNest' $ (fmap fromList') $ Map.fromListWith (++) $ reKey <$> items
       where
         reKey :: (PlainRec ((sy ::: ty) ': ks1 ': ks2), v) -> (ty, [(PlainRec (ks1 ': ks2), v)])
         reKey ((tyId :& ks), v) = (runIdentity tyId, [(ks, v)])
         
-    toList' (HMap'' m) = mconcat $ uncurry go <$> Map.toList m
+    toList' (HMapNest' m) = mconcat $ uncurry go <$> Map.toList m
       where 
-        go :: ty -> HMap' (ks1 ': ks2) v -> [(PlainRec ((sy ::: ty) ': ks1 ': ks2), v)] 
+        go :: ty -> HMapNest (ks1 ': ks2) v -> [(PlainRec ((sy ::: ty) ': ks1 ': ks2), v)] 
         go t m' = fmap (reKey t) $ toList' m' 
         reKey :: ty -> (PlainRec (ks1 ': ks2), v) -> (PlainRec ((sy ::: ty) ': ks1 ': ks2), v)
         reKey t (r, v) = (pure t :& r, v)
-    mempty' = HMap'' $ Map.empty
-    mappend' (HMap'' m1) (HMap'' m2) = HMap'' $  Map.unionWith (<>) m1 m2
+    fmap' f (HMapNest' m) = HMapNest' $ fmap (fmap' f) m
+    mempty' = HMapNest' $ Map.empty
+    mappend' (HMapNest' m1) (HMapNest' m2) = HMapNest' $  Map.unionWith (<>) m1 m2
 
 instance (RecordHMap rs) => MMap HMap rs where
     fromList = HMap . fromList'
     toList = toList' . unHMap   
 
-instance (Semigroup v, RecordHMap rs) => Semigroup (HMap' rs v) where
+instance (RecordHMap rs) => Functor (HMapNest rs) where
+    fmap = fmap'
+instance (Semigroup v, RecordHMap rs) => Semigroup (HMapNest rs v) where
     (<>) = mappend'
-instance (RecordHMap rs, Semigroup v) => Monoid (HMap' rs v) where
+instance (RecordHMap rs, Semigroup v) => Monoid (HMapNest rs v) where
     mappend = (<>)
     mempty = mempty'
     
-instance (RecordHMap rs, Show (PlainRec rs), Show v) => Show (HMap' rs v) where
+instance (RecordHMap rs, Show (PlainRec rs), Show v) => Show (HMapNest rs v) where
     showsPrec a b = showParen
           ((a >= 11)) ((.) (showString "fromList ") (showsPrec 11 $ toList' b))
 
