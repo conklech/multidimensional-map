@@ -20,6 +20,7 @@ library
                      Data.Map.Multidimensional.Nested
                      Data.Map.Multidimensional.Class
                      Data.Map.Multidimensional.GADT
+  ghc-options:     -O3 -Wall  
   build-depends:    
                      base == 4.6.*,
                      containers >= 0.5 && < 0.6,

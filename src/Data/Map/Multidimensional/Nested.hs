@@ -47,13 +47,6 @@ class NestedMMapClass (rs :: [*]) where
 --             -> NestedMMap rs b
 --    applyMap2 s m = NestedMMap . applyMap' s m . unNestedMMap
     
-    applyMap' :: forall thisSy t a b. IElem (thisSy ::: t) rs 
-              => (thisSy ::: t)
-              -> Map t (a -> b) 
-              -> NMMapType rs a 
-              -> NMMapType rs b
-    applyMap' = applyMap'' implicitly
-    {-# INLINE applyMap' #-}
     applyMap'' :: Elem (thisSy ::: thisTy) rs 
                => (thisSy ::: thisTy)
                -> Map thisTy (a -> b) 
@@ -117,7 +110,8 @@ instance (Ord ty, NFData ty, NestedMMapClass (ks1 ': ks2)) => NestedMMapClass ((
 instance (NestedMMapClass rs) => MMap NestedMMap rs where
     fromList = NestedMMap . fromList'
     toList = toList' . unNestedMMap
-    applyMap s m = NestedMMap . applyMap' s m . unNestedMMap
+    applyMap' e s m = NestedMMap . applyMap'' e s m . unNestedMMap
+    
     {-# INLINE applyMap #-}
        
 
