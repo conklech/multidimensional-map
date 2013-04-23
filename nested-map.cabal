@@ -19,6 +19,7 @@ library
                      Data.Map.Multidimensional
                      Data.Map.Multidimensional.Nested
                      Data.Map.Multidimensional.Class
+                     Data.Map.Multidimensional.GADT
   build-depends:    
                      base == 4.6.*,
                      containers >= 0.5 && < 0.6,
@@ -44,4 +45,5 @@ executable benchmark
   other-modules:  
                      Data.Map.Multidimensional
                      Data.Map.Multidimensional.Nested
-                     Data.Map.Multidimensional.Class
+                     Data.Map.Multidimensional.Class,
+                     Data.Map.Multidimensional.GADT

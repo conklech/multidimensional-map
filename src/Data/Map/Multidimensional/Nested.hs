@@ -8,11 +8,11 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE ScopedTypeVariables, RankNTypes #-}
 {-# LANGUAGE StandaloneDeriving, ScopedTypeVariables #-}
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving, UndecidableInstances #-}
 
 module Data.Map.Multidimensional.Nested
     (NestedMMap
-    ,NestedMMapClass(applyMap)
+    ,NestedMMapClass()
     )
     where
 
@@ -23,10 +23,9 @@ import Data.Functor.Identity            (runIdentity)
 import Data.Map.Strict                    (Map)
 import qualified Data.Map.Strict               as Map
 import Data.Semigroup                   ((<>), mappend, mconcat, mempty, Monoid, Semigroup)
-import Data.Traversable                 (Traversable, traverse)
 import Data.Vinyl                       --(Rec(..), (:::)(..), (=:), PlainRec)
 
-import Data.Map.Multidimensional.Class  (fromList, MMap, toList)
+import Data.Map.Multidimensional.Class
 
 newtype NestedMMap (rs :: [*]) v = NestedMMap { unNestedMMap :: (NMMapType rs v) } 
     deriving (Semigroup, Monoid, Functor, Foldable, Traversable, NFData)
@@ -42,13 +41,12 @@ class NestedMMapClass (rs :: [*]) where
     foldMap' :: Monoid m => (a -> m) -> NMMapType rs a -> m
     traverse' :: Applicative f => (a -> f b) -> NMMapType rs a -> f (NMMapType rs b)
     rnf' :: NFData a => NMMapType rs a -> ()
-    applyMap :: forall thisSy t a b. IElem (thisSy ::: t) rs 
-             => (thisSy ::: t)
-             -> Map t (a -> b) 
-             -> NestedMMap rs a
-             -> NestedMMap rs b
-    applyMap s m = NestedMMap . applyMap' s m . unNestedMMap
-    {-# INLINE applyMap #-}
+--    applyMap2 :: forall theseTys t a b. ISubset theseTys rs 
+--             => NestedMMap theseTys (a -> b) 
+--             -> NestedMMap rs a
+--             -> NestedMMap rs b
+--    applyMap2 s m = NestedMMap . applyMap' s m . unNestedMMap
+    
     applyMap' :: forall thisSy t a b. IElem (thisSy ::: t) rs 
               => (thisSy ::: t)
               -> Map t (a -> b) 
@@ -81,6 +79,7 @@ instance (Ord ty, NFData ty) => NestedMMapClass ((sy ::: ty) ': '[]) where
       where 
         go :: Elem (thisSy ::: t) ((sy ::: ty) ': '[]) -> (thisSy ::: t) -> t -> ty
         go Here _ = id
+        go _ _ = error "impossible; ?GHC bug 3927?"
         {-# INLINE go #-}
     {-# INLINE applyMap'' #-}
     rnf' (NMMBase m) = rnf m
@@ -117,7 +116,10 @@ instance (Ord ty, NFData ty, NestedMMapClass (ks1 ': ks2)) => NestedMMapClass ((
     {-# INLINE applyMap'' #-}
 instance (NestedMMapClass rs) => MMap NestedMMap rs where
     fromList = NestedMMap . fromList'
-    toList = toList' . unNestedMMap   
+    toList = toList' . unNestedMMap
+    applyMap s m = NestedMMap . applyMap' s m . unNestedMMap
+    {-# INLINE applyMap #-}
+       
 
 instance (NestedMMapClass rs) => Functor (NMMapType rs) where
     fmap = fmap'
@@ -133,12 +135,6 @@ instance (NestedMMapClass rs, Semigroup a) => Monoid (NMMapType rs a) where
     mappend = (<>)
     mempty = mempty'
     
---instance (NestedMMapClass rs, Show (PlainRec rs), Show v) => Show (NMMapType rs v) where
---    showsPrec a b = showParen
---          ((a >= 11)) ((.) (showString "fromList ") (showsPrec 11 $ toList' b))
-
-
---class (IElem (sy ::: t) rs) => ApplyMap sy t rs where
---    applyMap' :: PlainRec '[sy ::: Map t (a -> b)] -> NestedMMap rs a -> NestedMMap rs b
-    
---instance ApplyMap sy t '[]
+instance (NestedMMapClass rs, Show (PlainRec rs), Show v) => Show (NestedMMap rs v) where
+    showsPrec a b = showParen
+          ((a >= 11)) ((.) (showString "fromList ") (showsPrec 11 $ toList b))
