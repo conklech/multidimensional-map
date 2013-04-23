@@ -28,6 +28,7 @@ library
                      semigroups,
                      transformers,
                      deepseq
+  other-modules:    Data.Map.Multidimensional.Flat
 
 executable benchmark
   build-depends:    
@@ -47,4 +48,5 @@ executable benchmark
                      Data.Map.Multidimensional
                      Data.Map.Multidimensional.Nested
                      Data.Map.Multidimensional.Class,
-                     Data.Map.Multidimensional.GADT
+                     Data.Map.Multidimensional.GADT,
+                     Data.Map.Multidimensional.Flat

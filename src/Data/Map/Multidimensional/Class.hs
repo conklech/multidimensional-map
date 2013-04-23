@@ -7,7 +7,7 @@ import Data.Map(Map)
 class MMap m (rs :: [*]) where
     fromList :: [(PlainRec rs, a)] -> m rs a
     toList :: m rs a -> [(PlainRec rs, a)]
-    applyMap :: forall sy t a b. IElem (sy ::: t) rs 
+    applyMap :: forall sy t a b. (IElem (sy ::: t) rs, Ord t) 
              => (sy ::: t)
              -> Map t (a -> b) 
              -> m rs a

@@ -16,6 +16,8 @@ import Data.Monoid
 
 import Data.Map.Multidimensional
 import Data.Map.Multidimensional.GADT
+import Data.Map.Multidimensional.Flat
+import Data.Functor.Identity
 --import Data.Text hiding (zip)
 
 type TestField1 = "one" ::: Int
@@ -50,6 +52,7 @@ test x y = getSum $ foldMap Sum $ applyMap testField1 x y
 main = defaultMain
     [bench "nested" $ whnf (test $ factorMap 30 30) $ (testHMap 30 30 :: NestedMMap Fields Int)
     ,bench "GADT  " $ whnf (test $ factorMap 30 30) $ (testHMap 30 30 :: GADTMMap Fields Int)
+    ,bench "flat  " $ whnf (test $ factorMap 30 30) $ (testHMap 30 30 :: FlatMMap Fields Int)
     ]
 --    input <- evaluate $ force $ nested 60 100
 --    defaultMain
