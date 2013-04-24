@@ -1,7 +1,9 @@
 name:           multidimensional-map
 version:        0.1.0.0
-synopsis:       Multidimensional finite maps, with heterogenous indices collected into vinyl.
-description:    homepage:       https://github.com/conklech/multidimensional-map
+synopsis:       Multidimensional finite maps, with heterogeneous indices collected into vinyl records.
+description:    Multidimensional finite maps, with heterogeneous indices collected into 'vinyl' records.
+homepage:       https://github.com/conklech/multidimensional-map
+stability:      experimental
 license:        MIT
 author:         Christian Conkle
 maintainer:     christian@conkle.org
@@ -28,7 +30,6 @@ library
                      semigroups,
                      transformers,
                      deepseq
-  other-modules:    Data.Map.Multidimensional.Flat
 
 executable benchmark
   build-depends:    
