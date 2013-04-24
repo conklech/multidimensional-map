@@ -46,8 +46,8 @@ executable benchmark
   main-is:         Benchmark.hs
   ghc-options:     -O3 -threaded -Wall
   other-modules:  
-                     Data.Map.Multidimensional
-                     Data.Map.Multidimensional.Nested
+                     Data.Map.Multidimensional,
+                     Data.Map.Multidimensional.Nested,
                      Data.Map.Multidimensional.Class,
                      Data.Map.Multidimensional.GADT,
                      Data.Map.Multidimensional.Flat

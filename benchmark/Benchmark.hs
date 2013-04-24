@@ -15,6 +15,7 @@ import System.Random
 import Data.Monoid
 
 import Data.Map.Multidimensional
+import Data.Map.Multidimensional.Nested
 import Data.Map.Multidimensional.GADT
 import Data.Map.Multidimensional.Flat
 import Data.Functor.Identity

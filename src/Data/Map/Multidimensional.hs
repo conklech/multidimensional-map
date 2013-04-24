@@ -1,12 +1,12 @@
 {-# LANGUAGE RankNTypes, ImpredicativeTypes #-}
 module Data.Map.Multidimensional
     (module Data.Map.Multidimensional.Class
-    ,module Data.Map.Multidimensional.Nested
+    ,module Data.Map.Multidimensional.GADT
     ,fixRecList
     ) where
 
 import Data.Map.Multidimensional.Class
-import Data.Map.Multidimensional.Nested
+import Data.Map.Multidimensional.GADT
 
 import Control.Applicative
 import Control.Arrow
